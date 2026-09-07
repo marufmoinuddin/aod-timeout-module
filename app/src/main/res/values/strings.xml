@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AOD Timeout</string>
+    <string name="settings_title">AOD Timeout Settings</string>
+    
+    <!-- Dashboard -->
+    <string name="hook_status">Hook Status</string>
+    <string name="hook_active">Active</string>
+    <string name="hook_inactive">Inactive</string>
+    <string name="current_state">Current State</string>
+    <string name="timeout_value">Timeout</string>
+    <string name="root_access">Root Access</string>
+    <string name="granted">Granted</string>
+    <string name="denied">Denied</string>
+    
+    <!-- Settings -->
+    <string name="category_timeout">Timeout Settings</string>
+    <string name="aod_timeout_label">AOD Timeout (seconds)</string>
+    <string name="aod_timeout_summary">Timeout before AOD turns off</string>
+    <string name="paused_timeout_label">Paused Timeout (seconds)</string>
+    <string name="paused_timeout_summary">Timeout when screen is paused</string>
+    <string name="docked_timeout_label">Docked Timeout (seconds)</string>
+    <string name="docked_timeout_summary">Timeout when docked</string>
+    
+    <!-- States -->
+    <string name="state_doze_aod">DOZE_AOD</string>
+    <string name="state_doze_aod_paused">DOZE_AOD_PAUSED</string>
+    <string name="state_doze_aod_docked">DOZE_AOD_DOCKED</string>
+    <string name="state_doze">DOZE</string>
+    <string name="state_uninitialized">UNINITIALIZED</string>
+    
+    <!-- Properties -->
+    <string name="prop_doze_enabled">doze_enabled</string>
+    <string name="prop_doze_always_on">doze_always_on</string>
+    <string name="prop_aod_timeout">aod_timeout</string>
+    
+    <!-- Fallback -->
+    <string name="fallback_method">Fallback Method</string>
+    <string name="use_reflection">Use Reflection</string>
+    <string name="use_reflection_summary">Use SystemProperties.set() as fallback</string>
+    
+    <!-- Actions -->
+    <string name="apply_settings">Apply Settings</string>
+    <string name="apply_success">Settings applied successfully!</string>
+    <string name="apply_failed">Failed to apply settings</string>
+    <string name="test_hook">Test Hook</string>
+    <string name="clear_logs">Clear Logs</string>
+    
+    <!-- Fallback -->
+    <string name="enable_fallback">Enable Fallback</string>
+    <string name="enable_fallback_summary">Use SystemProperties.set() if root fails</string>
+    
+    <!-- Xposed Scope -->
+    <string-array name="xposed_scope">
+        <item>com.android.systemui</item>
+    </string-array>
+</resources>

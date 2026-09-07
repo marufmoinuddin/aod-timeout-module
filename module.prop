@@ -1,0 +1,10 @@
+# AOD Timeout Module
+# LSPosed module for controlling Always On Display timeout
+
+id=com.ambient.aodtimeout
+name=AOD Timeout Module
+version=1.1.0
+versionCode=101
+author=Maruf
+description=Always On Display Timeout Controller - Custom AOD timeout with state machine
+minVersion=82

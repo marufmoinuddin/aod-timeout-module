@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/on_background"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Status Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/hook_status"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface"
+                android:alpha="0.7"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_hook_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/hook_inactive"
+                android:textSize="18sp"
+                android:textColor="@color/status_inactive"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- State Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/current_state"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface"
+                android:alpha="0.7"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_current_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/state_uninitialized"
+                android:textSize="18sp"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Timeout Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/timeout_value"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface"
+                android:alpha="0.7"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_timeout_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30s"
+                android:textSize="18sp"
+                android:textColor="@color/accent"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Root Access Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/root_access"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface"
+                android:alpha="0.7"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_root_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/denied"
+                android:textSize="18sp"
+                android:textColor="@color/status_inactive"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btn_settings"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Settings"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_test"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Test Hook"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
