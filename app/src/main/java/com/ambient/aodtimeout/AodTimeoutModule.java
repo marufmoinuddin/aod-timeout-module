@@ -41,7 +41,6 @@ public class AodTimeoutModule implements IXposedHookLoadPackage {
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
         Log.i(TAG, "========== AOD Timeout Module v" + MODULE_VERSION + " ==========");
         Log.i(TAG, "Package: " + lpparam.packageName);
-        Log.i(TAG, "Process: " + lpparam.processName);
         
         // Check if this is our target package
         if (!TARGET_PACKAGE.equals(lpparam.packageName)) {
@@ -73,10 +72,10 @@ public class AodTimeoutModule implements IXposedHookLoadPackage {
                 "requestState",
                 XposedHelpers.findClass(DOZE_STATE_CLASS, classLoader),
                 new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Object state = param.args[0];
-                        String stateName = state != null ? state.toString() : "null";
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Object state = param.args[0];
+                    String stateName = state != null ? state.toString() : "null";
                         
                         Log.i(TAG, "requestState called with state: " + stateName);
                         

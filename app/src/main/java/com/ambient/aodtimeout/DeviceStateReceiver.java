@@ -97,8 +97,8 @@ public class DeviceStateReceiver extends BroadcastReceiver {
     }
     
     private void handleDockChanged(Intent intent) {
-        int dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, Intent.DOCK_STATE_UNDOCKED);
-        boolean isDocked = dockState != Intent.DOCK_STATE_UNDOCKED;
+        int dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1);
+        boolean isDocked = dockState >= 0;
         
         Log.d(TAG, "Dock changed: docked=" + isDocked + " state=" + dockState);
         

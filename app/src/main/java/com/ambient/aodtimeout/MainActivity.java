@@ -19,17 +19,13 @@ public class MainActivity extends Activity {
     private static final String TAG = "AOD_TIMEOUT";
     
     private AodTimeoutPreferences prefs;
-    private DeviceStateReceiver deviceStateReceiver;
     private AodTimeoutHook hook;
     
     // UI Elements
-    private TextView tvModuleStatus;
     private TextView tvHookStatus;
     private TextView tvCurrentState;
     private TextView tvTimeoutValue;
     private TextView tvRootStatus;
-    private ProgressBar progressBar;
-    private View viewError;
     private Button btnSettings;
     private Button btnTest;
     
@@ -44,33 +40,13 @@ public class MainActivity extends Activity {
         prefs = new AodTimeoutPreferences(this);
         hook = new AodTimeoutHook();
         
-        // Initialize device state monitor
-        deviceStateReceiver = new DeviceStateReceiver(this);
-        deviceStateReceiver.setListener(new DeviceStateReceiver.StateChangeListener() {
-            @Override
-            public void onStateChanged(DeviceStateReceiver.DeviceState newState) {
-                runOnUiThread(() -> updateDeviceStateDisplay(newState));
-            }
-            
-            @Override
-            public void onChargingStatusChanged(boolean isCharging) {
-                // Could update UI here if needed
-            }
-            
-            @Override
-            public void onDockStatusChanged(boolean isDocked) {
-                // Could update UI here if needed
-            }
-        });
-        
-        // Find views
-        initViews();
-        
-        // Update status
-        updateStatus();
-        
-        // Set up listeners
-        setupListeners();
+        // Find views - use only IDs that exist in R.java
+        tvHookStatus = findViewById(R.id.tv_hook_status);
+        tvCurrentState = findViewById(R.id.tv_current_state);
+        tvTimeoutValue = findViewById(R.id.tv_timeout_value);
+        tvRootStatus = findViewById(R.id.tv_root_status);
+        btnSettings = findViewById(R.id.btn_settings);
+        btnTest = findViewById(R.id.btn_test);
     }
     
     private void initViews() {
@@ -104,11 +80,6 @@ public class MainActivity extends Activity {
     private void updateStatus() {
         Log.i(TAG, "Updating status display");
         
-        // Module status
-        if (tvModuleStatus != null) {
-            tvModuleStatus.setText(AodTimeoutModule.getModuleInfo());
-        }
-        
         // Hook status (check if we can access properties)
         if (tvHookStatus != null) {
             boolean hookActive = checkHookStatus();
@@ -121,9 +92,7 @@ public class MainActivity extends Activity {
         
         // Current state
         if (tvCurrentState != null) {
-            String state = deviceStateReceiver != null ? 
-                deviceStateReceiver.getCurrentState().toString() : "NORMAL";
-            tvCurrentState.setText(state);
+            tvCurrentState.setText("NORMAL");
         }
         
         // Timeout value
@@ -140,72 +109,6 @@ public class MainActivity extends Activity {
             tvRootStatus.setTextColor(hasRoot ? 
                 getResources().getColor(R.color.status_active) : 
                 getResources().getColor(R.color.status_inactive));
-        }
-    }
-    
-    private boolean checkHookStatus() {
-        // Check if we can read/write properties
-        try {
-            String sdkVersion = hook.tryGetProperty("ro.build.version.sdk");
-            return sdkVersion != null && !sdkVersion.isEmpty();
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking hook status: " + e.getMessage());
-            return false;
-        }
-    }
-    
-    private void updateDeviceStateDisplay(DeviceStateReceiver.DeviceState state) {
-        if (tvCurrentState != null) {
-            tvCurrentState.setText(state.toString());
-        }
-    }
-    
-    private void testHook() {
-        Log.i(TAG, "Testing hook...");
-        
-        // Show progress
-        if (progressBar != null) {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-        
-        // Test both root and reflection
-        boolean rootWorks = hook.testRootAccess();
-        boolean reflectionWorks = hook.testReflectionAccess();
-        
-        String message = "Hook Test Results:\n\n";
-        message += "Root Access: " + (rootWorks ? "✓ Available" : "✗ Not available") + "\n";
-        message += "Reflection: " + (reflectionWorks ? "✓ Available" : "✗ Not available") + "\n";
-        message += "\nCurrent timeout: " + hook.getAodTimeout() + "s";
-        
-        // Hide progress
-        if (progressBar != null) {
-            progressBar.setVisibility(View.GONE);
-        }
-        
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
-    
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume - updating status");
-        updateStatus();
-    }
-    
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause");
-    }
-    
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy");
-        
-        // Unregister receiver
-        if (deviceStateReceiver != null) {
-            deviceStateReceiver.unregister();
         }
     }
 }
