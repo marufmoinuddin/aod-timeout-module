@@ -74,12 +74,12 @@ public class MainActivity extends Activity {
     }
     
     private void initViews() {
-        tvModuleStatus = findViewById(R.id.tv_module_status);
+        tvModuleStatus = findViewById(R.id.tv_title);
         tvHookStatus = findViewById(R.id.tv_hook_status);
         tvCurrentState = findViewById(R.id.tv_current_state);
         tvTimeoutValue = findViewById(R.id.tv_timeout_value);
         tvRootStatus = findViewById(R.id.tv_root_status);
-        progressBar = findViewById(R.id.progress_bar);
+        progressBar = findViewById(R.id.view_loading);
         viewError = findViewById(R.id.view_error);
         btnSettings = findViewById(R.id.btn_settings);
         btnTest = findViewById(R.id.btn_test);

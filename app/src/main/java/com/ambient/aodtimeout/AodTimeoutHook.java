@@ -178,7 +178,7 @@ public class AodTimeoutHook {
         }
     }
     
-    private String tryGetProperty(String key) {
+    public String tryGetProperty(String key) {
         try {
             Class<?> systemProperties = XposedHelpers.findClass(
                 "android.os.SystemProperties", null);

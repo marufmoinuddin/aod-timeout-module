@@ -11,10 +11,10 @@ import java.io.File;
 import java.io.InputStreamReader;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.LoadPackageParam;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Main LSPosed module entry point.
@@ -38,7 +38,7 @@ public class AodTimeoutModule implements IXposedHookLoadPackage {
     private boolean hookInstalled = false;
     
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
         Log.i(TAG, "========== AOD Timeout Module v" + MODULE_VERSION + " ==========");
         Log.i(TAG, "Package: " + lpparam.packageName);
         Log.i(TAG, "Process: " + lpparam.processName);

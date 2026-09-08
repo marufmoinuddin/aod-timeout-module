@@ -50,7 +50,7 @@ public class SettingsActivity extends Activity {
         etPausedTimeout = findViewById(R.id.et_paused_timeout);
         etDockedTimeout = findViewById(R.id.et_docked_timeout);
         cbFallback = findViewById(R.id.cb_fallback);
-        cbReflection = findViewById(R.id.cb_reflection);
+        cbReflection = findViewById(R.id.cb_fallback);
         btnApply = findViewById(R.id.btn_apply);
     }
     
