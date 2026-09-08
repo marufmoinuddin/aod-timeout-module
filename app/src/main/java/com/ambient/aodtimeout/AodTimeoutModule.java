@@ -1,142 +1,198 @@
 package com.ambient.aodtimeout;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Looper;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.LoadPackageParam;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
- * LSPosed module entry point for AOD Timeout control.
- * Hooks DozeMachine in com.android.systemui to intercept AOD state transitions.
+ * Main LSPosed module entry point.
+ * Hooks DozeMachine in com.android.systemui to control AOD timeout.
  */
 public class AodTimeoutModule implements IXposedHookLoadPackage {
     
     private static final String TAG = "AOD_TIMEOUT";
-    private static final String PROP_DOZE_ENABLED = "persist.sys.doze_enabled";
-    private static final String PROP_DOZE_ALWAYS_ON = "persist.sys.doze_always_on";
-    private static final String PROP_AOD_TIMEOUT = "persist.sys.doze_aod_timeout";
+    private static final String TARGET_PACKAGE = "com.android.systemui";
     
-    // Default timeout values
-    private static final int DEFAULT_AOD_TIMEOUT = 30;
-    private static final int DEFAULT_PAUSED_TIMEOUT = 150;
-    private static final int DEFAULT_DOCKED_TIMEOUT = 300;
+    // DozeMachine class names
+    private static final String DOZE_MACHINE_CLASS = "com.android.systemui.doze.DozeMachine";
+    private static final String DOZE_STATE_CLASS = "com.android.systemui.doze.DozeMachine$State";
     
-    // State multipliers
-    private static final float PAUSED_MULTIPLIER = 5.0f;
-    private static final float DOCKED_MULTIPLIER = 10.0f;
+    // Module info
+    public static final String MODULE_ID = "com.ambient.aodtimeout";
+    public static final String MODULE_NAME = "AOD Timeout Module";
+    public static final String MODULE_VERSION = "1.1.0";
     
-    private SharedPreferences prefs;
-    private boolean useFallback = true;
+    private AodTimeoutHook hook;
+    private boolean hookInstalled = false;
     
     @Override
-    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        Log.i(TAG, "Module loaded for: " + lpparam.packageName);
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+        Log.i(TAG, "========== AOD Timeout Module v" + MODULE_VERSION + " ==========");
+        Log.i(TAG, "Package: " + lpparam.packageName);
+        Log.i(TAG, "Process: " + lpparam.processName);
         
-        if (!"com.android.systemui".equals(lpparam.packageName)) {
+        // Check if this is our target package
+        if (!TARGET_PACKAGE.equals(lpparam.packageName)) {
+            Log.d(TAG, "Skipping non-target package: " + lpparam.packageName);
             return;
         }
         
-        Log.i(TAG, "Hooking DozeMachine in SystemUI...");
+        Log.i(TAG, "Hooking " + TARGET_PACKAGE + "...");
         
-        // Hook DozeMachine.requestState() to intercept AOD state changes
-        XposedHelpers.findAndHookMethod(
-            "com.android.systemui.doze.DozeMachine",
-            lpparam.classLoader,
-            "requestState",
-            XposedHelpers.findClass("com.android.systemui.doze.DozeMachine$State", lpparam.classLoader),
-            new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    handleStateChange(param);
+        // Initialize hook manager
+        hook = new AodTimeoutHook();
+        
+        // Install hooks
+        installDozeMachineHooks(lpparam.classLoader);
+        
+        // Log module status
+        logModuleStatus();
+    }
+    
+    /**
+     * Installs hooks on DozeMachine methods.
+     */
+    private void installDozeMachineHooks(ClassLoader classLoader) {
+        try {
+            // Hook requestState() - the main entry point for AOD state changes
+            XposedHelpers.findAndHookMethod(
+                DOZE_MACHINE_CLASS,
+                classLoader,
+                "requestState",
+                XposedHelpers.findClass(DOZE_STATE_CLASS, classLoader),
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object state = param.args[0];
+                        String stateName = state != null ? state.toString() : "null";
+                        
+                        Log.i(TAG, "requestState called with state: " + stateName);
+                        
+                        // Handle state transitions
+                        handleStateTransition(stateName);
+                    }
                 }
-            }
-        );
-        
-        Log.i(TAG, "DozeMachine.requestState() hooked successfully");
+            );
+            
+            Log.i(TAG, "Successfully hooked DozeMachine.requestState()");
+            hookInstalled = true;
+            
+        } catch (NoSuchMethodError e) {
+            Log.e(TAG, "Method not found: requestState() - " + e.getMessage());
+            Log.e(TAG, "Trying alternative hook...");
+            tryHookAlternative(classLoader);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to hook DozeMachine: " + e.getMessage(), e);
+        }
     }
     
-    private void handleStateChange(XC_MethodHook.MethodHookParam param) {
+    /**
+     * Alternative hooking strategy if primary fails.
+     */
+    private void tryHookAlternative(ClassLoader classLoader) {
         try {
-            Object state = param.args[0];
-            String stateName = state.toString();
+            // Try hooking onStart() or other lifecycle methods
+            XposedHelpers.findAndHookMethod(
+                DOZE_MACHINE_CLASS,
+                classLoader,
+                "onStart",
+                new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.i(TAG, "DozeMachine.onStart() called");
+                    }
+                }
+            );
             
-            Log.i(TAG, "State change detected: " + stateName);
-            
-            // Get current timeout from preferences
-            int baseTimeout = DEFAULT_AOD_TIMEOUT;
-            if (prefs != null) {
-                baseTimeout = prefs.getInt("aod_timeout", DEFAULT_AOD_TIMEOUT);
-            }
-            
-            // Calculate timeout based on state
-            int finalTimeout = baseTimeout;
-            
-            if ("DOZE_AOD_PAUSED".equals(stateName)) {
-                finalTimeout = (int) (baseTimeout * PAUSED_MULTIPLIER);
-                Log.i(TAG, "DOZE_AOD_PAUSED: timeout = " + finalTimeout + "s");
-            } else if ("DOZE_AOD_DOCKED".equals(stateName)) {
-                finalTimeout = (int) (baseTimeout * DOCKED_MULTIPLIER);
-                Log.i(TAG, "DOZE_AOD_DOCKED: timeout = " + finalTimeout + "s");
-            } else if ("DOZE_AOD".equals(stateName)) {
-                Log.i(TAG, "DOZE_AOD: timeout = " + finalTimeout + "s");
-            }
-            
-            // Set the property
-            setProperty(PROP_AOD_TIMEOUT, String.valueOf(finalTimeout));
+            Log.i(TAG, "Successfully hooked DozeMachine.onStart()");
+            hookInstalled = true;
             
         } catch (Exception e) {
-            Log.e(TAG, "Error handling state change: " + e.getMessage());
+            Log.e(TAG, "Alternative hook also failed: " + e.getMessage());
         }
     }
     
-    private void setProperty(String key, String value) {
-        // Try root shell first
-        if (tryRootSetProperty(key, value)) {
-            Log.i(TAG, "Property set via root: " + key + "=" + value);
-            return;
+    /**
+     * Handles state transitions and sets appropriate timeouts.
+     */
+    private void handleStateTransition(String stateName) {
+        if (hook == null) return;
+        
+        Log.i(TAG, "Handling state transition: " + stateName);
+        
+        // Determine timeout based on state
+        int timeout = AodTimeoutPreferences.DEFAULT_AOD_TIMEOUT;
+        
+        if (AodTimeoutHook.STATE_DOZE_AOD_PAUSED.equals(stateName)) {
+            timeout = AodTimeoutPreferences.DEFAULT_PAUSED_TIMEOUT;
+            Log.i(TAG, "DOZE_AOD_PAUSED: using paused timeout " + timeout + "s");
+        } else if (AodTimeoutHook.STATE_DOZE_AOD_DOCKED.equals(stateName)) {
+            timeout = AodTimeoutPreferences.DEFAULT_DOCKED_TIMEOUT;
+            Log.i(TAG, "DOZE_AOD_DOCKED: using docked timeout " + timeout + "s");
+        } else if (AodTimeoutHook.STATE_DOZE_AOD.equals(stateName)) {
+            timeout = AodTimeoutPreferences.DEFAULT_AOD_TIMEOUT;
+            Log.i(TAG, "DOZE_AOD: using default timeout " + timeout + "s");
         }
         
-        // Fallback to reflection
-        if (useFallback) {
-            tryReflectionSetProperty(key, value);
+        // Apply timeout
+        boolean success = hook.setAodTimeout(timeout);
+        if (success) {
+            Log.i(TAG, "Timeout applied successfully: " + timeout + "s");
+        } else {
+            Log.e(TAG, "Failed to apply timeout");
         }
     }
     
-    private boolean tryRootSetProperty(String key, String value) {
-        try {
-            Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", 
-                "setprop " + key + " " + value});
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (IOException | InterruptedException e) {
-            Log.e(TAG, "Root property set failed: " + e.getMessage());
-            return false;
+    /**
+     * Logs the current module status.
+     */
+    private void logModuleStatus() {
+        Log.i(TAG, "========== Module Status ==========");
+        Log.i(TAG, "Module: " + MODULE_NAME);
+        Log.i(TAG, "Version: " + MODULE_VERSION);
+        Log.i(TAG, "Target: " + TARGET_PACKAGE);
+        Log.i(TAG, "Hook installed: " + hookInstalled);
+        
+        if (hook != null) {
+            Log.i(TAG, "Root access: " + hook.testRootAccess());
+            Log.i(TAG, "Reflection access: " + hook.testReflectionAccess());
+            Log.i(TAG, "Current timeout: " + hook.getAodTimeout() + "s");
+            Log.i(TAG, "Doze enabled: " + hook.isDozeEnabled());
+            Log.i(TAG, "Always on: " + hook.isAlwaysOnEnabled());
         }
+        
+        Log.i(TAG, "=================================");
     }
     
-    private void tryReflectionSetProperty(String key, String value) {
+    /**
+     * Opens the module settings activity.
+     */
+    public static void openSettings(Context context) {
         try {
-            Class<?> systemProperties = XposedHelpers.findClass(
-                "android.os.SystemProperties", null);
-            Method setMethod = XposedHelpers.findMethodExact(
-                systemProperties, "set", String.class, String.class);
-            setMethod.invoke(null, key, value);
-            Log.i(TAG, "Property set via reflection: " + key + "=" + value);
+            Intent intent = new Intent(context, SettingsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         } catch (Exception e) {
-            Log.e(TAG, "Reflection property set failed: " + e.getMessage());
+            Log.e(TAG, "Failed to open settings: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Gets module information.
+     */
+    public static String getModuleInfo() {
+        return MODULE_NAME + " v" + MODULE_VERSION;
     }
 }
