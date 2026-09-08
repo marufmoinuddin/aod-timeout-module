@@ -5,11 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Main dashboard activity showing module status and settings.
@@ -40,47 +37,34 @@ public class MainActivity extends Activity {
         prefs = new AodTimeoutPreferences(this);
         hook = new AodTimeoutHook();
         
-        // Find views - use only IDs that exist in R.java
+        // Find views
         tvHookStatus = findViewById(R.id.tv_hook_status);
         tvCurrentState = findViewById(R.id.tv_current_state);
         tvTimeoutValue = findViewById(R.id.tv_timeout_value);
         tvRootStatus = findViewById(R.id.tv_root_status);
         btnSettings = findViewById(R.id.btn_settings);
         btnTest = findViewById(R.id.btn_test);
-    }
-    
-    private void initViews() {
-        tvModuleStatus = findViewById(R.id.tv_title);
-        tvHookStatus = findViewById(R.id.tv_hook_status);
-        tvCurrentState = findViewById(R.id.tv_current_state);
-        tvTimeoutValue = findViewById(R.id.tv_timeout_value);
-        tvRootStatus = findViewById(R.id.tv_root_status);
-        progressBar = findViewById(R.id.view_loading);
-        viewError = findViewById(R.id.view_error);
-        btnSettings = findViewById(R.id.btn_settings);
-        btnTest = findViewById(R.id.btn_test);
-    }
-    
-    private void setupListeners() {
-        // Settings button
+        
+        // Set up listeners
         if (btnSettings != null) {
             btnSettings.setOnClickListener(v -> {
-                Log.i(TAG, "Opening settings");
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
             });
         }
         
-        // Test button
         if (btnTest != null) {
             btnTest.setOnClickListener(v -> testHook());
         }
+        
+        // Update status
+        updateStatus();
     }
     
     private void updateStatus() {
         Log.i(TAG, "Updating status display");
         
-        // Hook status (check if we can access properties)
+        // Hook status
         if (tvHookStatus != null) {
             boolean hookActive = checkHookStatus();
             String hookText = hookActive ? getString(R.string.hook_active) : getString(R.string.hook_inactive);
@@ -110,5 +94,27 @@ public class MainActivity extends Activity {
                 getResources().getColor(R.color.status_active) : 
                 getResources().getColor(R.color.status_inactive));
         }
+    }
+    
+    private boolean checkHookStatus() {
+        try {
+            String sdkVersion = hook.tryGetProperty("ro.build.version.sdk");
+            return sdkVersion != null && !sdkVersion.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    private void testHook() {
+        boolean rootWorks = hook.testRootAccess();
+        boolean reflectionWorks = hook.testReflectionAccess();
+        
+        Log.i(TAG, "Hook test: root=" + rootWorks + ", reflection=" + reflectionWorks);
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateStatus();
     }
 }

@@ -172,7 +172,7 @@ public class AodTimeoutHook {
             Log.i(TAG, "Reflection setprop successful");
             return true;
             
-        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             Log.e(TAG, "Reflection property set failed: " + e.getMessage());
             return false;
         }

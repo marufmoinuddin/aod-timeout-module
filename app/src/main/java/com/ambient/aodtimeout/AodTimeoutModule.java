@@ -72,11 +72,11 @@ public class AodTimeoutModule implements IXposedHookLoadPackage {
                 "requestState",
                 XposedHelpers.findClass(DOZE_STATE_CLASS, classLoader),
                 new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Object state = param.args[0];
-                    String stateName = state != null ? state.toString() : "null";
-                        
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object state = param.args[0];
+                        String stateName = state != null ? state.toString() : "null";
+                            
                         Log.i(TAG, "requestState called with state: " + stateName);
                         
                         // Handle state transitions
